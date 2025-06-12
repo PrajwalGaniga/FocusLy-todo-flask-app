@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --danger: #f72585;
+        --info: #4895ef;
+        --background: #e0f2f7; /* Consistent with dashboard */
+        --card-bg: #ffffff;
+        --text-primary: #2d3748;
+        --text-secondary: #4a5568;
+        --link-color: var(--primary);
+        --input-border: #ddd;
+        --input-focus-border: var(--primary);
+        --button-hover: var(--secondary);
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); /* Blue gradient background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--text-primary);
+        overflow: hidden; /* Hide overflow for background gradient */
+    }
+
+    .auth-container {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+        padding: 40px;
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
+        animation: fadeInScale 0.7s ease-out forwards;
+    }
+
+    .auth-container h2 {
+        font-size: 28px;
+        color: var(--primary);
+        margin-bottom: 25px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: calc(100% - 30px); /* Adjust for padding */
+        padding: 15px;
+        border: 1px solid var(--input-border);
+        border-radius: 10px; /* More rounded input */
+        font-size: 16px;
+        transition: all 0.3s ease;
+        color: var(--text-primary);
+        background-color: var(--background); /* Light background for input */
+    }
+
+    .form-control:focus {
+        border-color: var(--input-focus-border);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+    }
+
+    .auth-button {
+        width: 100%;
+        padding: 15px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px; /* More rounded button */
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .auth-button:hover {
+        background-color: var(--button-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch-link {
+        margin-top: 25px;
+        font-size: 15px;
+        color: var(--text-secondary);
+    }
+
+    .switch-link a {
+        color: var(--link-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .switch-link a:hover {
+        color: var(--secondary);
+        text-decoration: underline;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    /* Animations */
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<div class="auth-container" id="auth-main-container">
+    <div id="login-section" class="animate__animated animate__fadeIn">
+        <h2><i class="material-icons">login</i> Welcome Back!</h2>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required>
+            </div>
+            <button type="submit" class="auth-button">
+                <i class="material-icons">lock_open</i> Login
+            </button>
+        </form>
+        <p class="switch-link">New user? <a href="#" onclick="showRegister()">Register Here</a></p>
+    </div>
+
+    <div id="register-section" class="hidden">
+        <h2><i class="material-icons">person_add</i> Create Account</h2>
+        <form action="/register" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Choose a Username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required>
+            </div>
+            <button type="submit" class="auth-button">
+                <i class="material-icons">how_to_reg</i> Register
+            </button>
+        </form>
+        <p class="switch-link">Already registered? <a href="#" onclick="showLogin()">Login Here</a></p>
+    </div>
+</div>
+
+<script>
+    function showRegister() {
+        const loginSection = document.getElementById('login-section');
+        const registerSection = document.getElementById('register-section');
+
+        loginSection.classList.remove('animate__fadeIn', 'animate__slideInLeft');
+        loginSection.classList.add('animate__fadeOut');
+
+        setTimeout(() => {
+            loginSection.classList.add('hidden');
+            loginSection.classList.remove('animate__fadeOut');
+            
+            registerSection.classList.remove('hidden', 'animate__fadeOut');
+            registerSection.classList.add('animate__fadeIn', 'animate__slideInRight');
+        }, 300);
+    }
+
+    function showLogin() {
+        const loginSection = document.getElementById('login-section');
+        const registerSection = document.getElementById('register-section');
+
+        registerSection.classList.remove('animate__fadeIn', 'animate__slideInRight');
+        registerSection.classList.add('animate__fadeOut');
+
+        setTimeout(() => {
+            registerSection.classList.add('hidden');
+            registerSection.classList.remove('animate__fadeOut');
+
+            loginSection.classList.remove('hidden', 'animate__fadeOut');
+            loginSection.classList.add('animate__fadeIn', 'animate__slideInLeft');
+        }, 300);
+    }
+</script>
+{% endblock %}

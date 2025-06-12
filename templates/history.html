@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4CAF50;
+        --danger: #f72585;
+        --warning: #f8961e;
+        --info: #4895ef;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --background: #e0f2f7;
+        --card-bg: #ffffff;
+        --text-primary: #2d3748;
+        --text-secondary: #4a5568;
+        --completed-bg: #e6ffe6;
+        --completed-border: #4CAF50;
+        --gradient-start: #6a11cb;
+        --gradient-end: #2575fc;
+        --border-color: rgba(0, 0, 0, 0.1);
+        --table-row-even: #f9f9f9;
+        --table-row-hover: #f0f8ff;
+        --header-bg-start: #1c2a4f;
+        --header-bg-end: #0a1128;
+        --header-text-color: #ffffff;
+        --header-glow-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Dark Mode Variables */
+    body.dark-mode {
+        --background: #282c34;
+        --card-bg: #3a4049;
+        --text-primary: #e0e0e0;
+        --text-secondary: #bbbbbb;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --completed-bg: #2d5530;
+        --completed-border: #66bb6a;
+        --table-row-even: #2d2d2d;
+        --table-row-hover: #1e3a8a;
+        --header-bg-start: #181c25;
+        --header-bg-end: #0c0f16;
+        --header-text-color: #f0f0f0;
+        --header-glow-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--background);
+        margin: 0;
+        padding: 0;
+        color: var(--text-primary);
+        overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Enhanced Header Styles */
+    .nav-container {
+        width: 100%;
+        background: linear-gradient(135deg, var(--header-bg-start), var(--header-bg-end));
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        padding: 0.8rem 1.5rem;
+        color: var(--header-text-color);
+        overflow: hidden;
+    }
+
+    .nav-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+
+    .app-title {
+        font-size: 1.6rem;
+        margin: 0;
+        color: var(--header-text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .app-title .material-icons {
+        font-size: 1.8rem;
+        color: #ffeb3b;
+        animation: rotateIcon 4s linear infinite;
+    }
+
+    @keyframes rotateIcon {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .welcome-message {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0 10px;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+
+    .nav-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+        color: var(--header-text-color);
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        background: none;
+        min-width: 40px;
+        height: 40px;
+    }
+
+    .btn-action:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn-action .material-icons {
+        font-size: 1.4rem;
+    }
+
+    .btn-text {
+        display: none;
+    }
+
+    .notification-counter {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: var(--danger);
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        display: none;
+    }
+
+    .notification-counter.visible {
+        display: flex;
+    }
+
+    .history-list-container {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        animation: fadeIn 0.8s ease-out;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: color 0.3s ease;
+    }
+
+    body.dark-mode .section-title {
+        color: var(--text-primary);
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .history-table th, .history-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .history-table th {
+        background-color: var(--primary);
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .history-table tbody tr:nth-child(even) {
+        background-color: var(--table-row-even);
+    }
+
+    .history-table tbody tr:hover {
+        background-color: var(--table-row-hover);
+    }
+
+    .history-table td {
+        color: var(--text-primary);
+        font-size: 15px;
+    }
+
+    .action-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: capitalize;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .action-completed {
+        background-color: #e8f5e9;
+        color: var(--success);
+    }
+
+    body.dark-mode .action-completed {
+        background-color: #1b5e20;
+        color: #a5d6a7;
+    }
+
+    .action-deleted {
+        background-color: #ffebee;
+        color: var(--danger);
+    }
+
+    body.dark-mode .action-deleted {
+        background-color: #5d000f;
+        color: #ff9e9e;
+    }
+    
+    .action-timeout {
+        background-color: #fff3e0;
+        color: var(--warning);
+    }
+
+    body.dark-mode .action-timeout {
+        background-color: #6a4b00;
+        color: #ffcc80;
+    }
+
+    .priority-high {
+        color: var(--danger);
+        font-weight: 600;
+    }
+
+    .priority-medium {
+        color: var(--warning);
+        font-weight: 600;
+    }
+
+    .priority-low {
+        color: var(--info);
+        font-weight: 600;
+    }
+
+    .no-history {
+        text-align: center;
+        padding: 50px 30px;
+        color: var(--text-secondary);
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        background-color: rgba(250, 250, 250, 0.6);
+        animation: fadeIn 0.8s ease-out;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode .no-history {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .no-history i {
+        font-size: 60px;
+        color: #ccc;
+        margin-bottom: 20px;
+        transition: color 0.3s ease;
+    }
+
+    body.dark-mode .no-history i {
+        color: #888;
+    }
+
+    .no-history p {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+        .btn-action {
+            padding: 0.5rem 0.8rem;
+        }
+        
+        .btn-text {
+            display: inline;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .nav-container {
+            padding: 0.6rem 1rem;
+        }
+        
+        .app-title {
+            font-size: 1.4rem;
+        }
+        
+        .app-title .material-icons {
+            font-size: 1.5rem;
+        }
+        
+        .welcome-message {
+            font-size: 1rem;
+            order: 3;
+            width: 100%;
+            text-align: center;
+            margin-top: 5px;
+        }
+        
+        .history-table th, .history-table td {
+            font-size: 14px;
+            padding: 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-container {
+            padding: 0.5rem;
+        }
+        
+        .app-title {
+            font-size: 1.2rem;
+        }
+        
+        .welcome-message {
+            font-size: 0.9rem;
+        }
+        
+        .btn-action {
+            min-width: 36px;
+            height: 36px;
+            padding: 0.3rem;
+        }
+        
+        .btn-action .material-icons {
+            font-size: 1.2rem;
+        }
+        
+        .history-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    }
+</style>
+
+<div class="nav-container">
+    <div class="nav-bar">
+        <div class="nav-brand">
+            <h1 class="app-title">
+                <i class="material-icons">assignment</i> FocusLy
+            </h1>
+        </div>
+        <span class="welcome-message">Task History - {{ username }}</span>
+
+        <div class="nav-actions">
+            <button class="btn-action" id="darkModeToggle">
+                <i class="material-icons">brightness_4</i>
+                <span class="btn-text">Dark Mode</span>
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn-action">
+                <i class="material-icons">dashboard</i>
+                <span class="btn-text">Dashboard</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn-action">
+                <i class="material-icons">logout</i>
+                <span class="btn-text">Logout</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="history-list-container animate__animated animate__fadeInUp">
+        <h2 class="section-title">
+            <i class="material-icons">archive</i> Archived Tasks
+        </h2>
+        
+        {% if history_tasks %}
+        <div style="overflow-x:auto;">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Action</th>
+                        <th>Action Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in history_tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.description }}</td>
+                        <td><span class="priority-{{ task.priority }}">{{ task.priority|capitalize }}</span></td>
+                        <td>{{ task.deadline }}</td>
+                        <td><span class="action-badge action-{{ task.action | lower }}">{{ task.action|capitalize }}</span></td>
+                        <td>{{ task.action_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-history animate__animated animate__fadeIn">
+            <i class="material-icons">inbox</i>
+            <p>No completed or deleted tasks yet. Your history will appear here!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.querySelector('i').textContent = 'brightness_high';
+            const btnText = darkModeToggle.querySelector('.btn-text');
+            if (btnText) btnText.textContent = ' Light Mode';
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.querySelector('i').textContent = 'brightness_high';
+                const btnText = darkModeToggle.querySelector('.btn-text');
+                if (btnText) btnText.textContent = ' Light Mode';
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                darkModeToggle.querySelector('i').textContent = 'brightness_4';
+                const btnText = darkModeToggle.querySelector('.btn-text');
+                if (btnText) btnText.textContent = ' Dark Mode';
+            }
+        });
+    });
+</script>
+{% endblock %}

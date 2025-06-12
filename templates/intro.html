@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusLy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --text: #ffffff;
+        }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text);
+            animation: fadeInBackground 1s ease-out;
+        }
+
+        /* Particle background */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Floating shapes */
+        .floating-shape {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent), transparent 70%);
+            top: -150px;
+            right: -150px;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: float 25s linear infinite;
+        }
+
+        .shape-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary), transparent 70%);
+            bottom: -200px;
+            left: -200px;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation: float 30s linear infinite reverse;
+        }
+
+        /* Main content container */
+        .intro-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: row;
+            font-size: 8em;
+            font-weight: 800;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            perspective: 1000px;
+        }
+
+        .letter {
+            opacity: 0;
+            transform: translateY(50px) scale(0.8);
+            animation: revealLetter 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            margin: 0 -0.05em;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Add subtle glow effect to letters */
+        .letter::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, var(--accent), transparent 70%);
+            z-index: -1;
+            opacity: 0;
+            animation: letterGlow 2s ease-in-out infinite;
+            animation-delay: 0.8s;
+        }
+
+        /* Delay for each letter */
+        .letter:nth-child(1) { animation-delay: 0.2s; } /* F */
+        .letter:nth-child(2) { animation-delay: 0.4s; } /* o */
+        .letter:nth-child(3) { animation-delay: 0.6s; } /* c */
+        .letter:nth-child(4) { animation-delay: 0.8s; } /* u */
+        .letter:nth-child(5) { animation-delay: 1.0s; } /* s */
+        .letter:nth-child(6) { animation-delay: 1.2s; } /* L */
+        .letter:nth-child(7) { animation-delay: 1.4s; } /* y */
+
+        /* Tagline */
+        .tagline {
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            font-size: 1.5em;
+            letter-spacing: 2px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease-out forwards;
+            animation-delay: 2.0s;
+        }
+
+        /* Loading bar */
+        .loading-bar {
+            position: absolute;
+            bottom: 15%;
+            left: 25%;
+            right: 25%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: loading 2.5s ease-in forwards;
+            animation-delay: 1.5s;
+        }
+
+        /* Animations */
+        @keyframes revealLetter {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                text-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+            }
+        }
+
+        @keyframes letterGlow {
+            0%, 100% { opacity: 0; transform: scale(0.9); }
+            50% { opacity: 0.3; transform: scale(1.1); }
+        }
+
+        @keyframes fadeInBackground {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 0.8;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: rotate(0deg) translateX(0) translateY(0); }
+            25% { transform: rotate(5deg) translateX(-20px) translateY(20px); }
+            50% { transform: rotate(0deg) translateX(0) translateY(0); }
+            75% { transform: rotate(-5deg) translateX(20px) translateY(-20px); }
+            100% { transform: rotate(0deg) translateX(0) translateY(0); }
+        }
+
+        @keyframes loading {
+            to { width: 100%; }
+        }
+
+        @keyframes pulseEffect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .intro-container {
+                font-size: 5em;
+            }
+            .tagline {
+                font-size: 1.2em;
+                bottom: 25%;
+            }
+            .shape-1, .shape-2 {
+                transform: scale(0.7);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .intro-container {
+                font-size: 3em;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .tagline {
+                font-size: 1em;
+                bottom: 30%;
+            }
+            .shape-1, .shape-2 {
+                transform: scale(0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="particles" id="particles"></div>
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+
+    <!-- Main content -->
+    <div class="intro-container" id="introText">
+        <span class="letter">F</span>
+        <span class="letter">o</span>
+        <span class="letter">c</span>
+        <span class="letter">u</span>
+        <span class="letter">s</span>
+        <span class="letter">L</span>
+        <span class="letter">y</span>
+        
+        <div class="loading-bar"><div class="loading-progress"></div></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create particles
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 30 : 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 5 + 2;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                const delay = Math.random() * 5;
+                const duration = 10 + Math.random() * 20;
+                const opacity = 0.2 + Math.random() * 0.3;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.top = `${posY}px`;
+                particle.style.opacity = opacity;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            const introTextContainer = document.getElementById('introText');
+            const letters = introTextContainer.querySelectorAll('.letter');
+            const totalAnimationTime = letters.length * 0.2 + 0.8;
+            
+            // Add pulsate effect after all letters have appeared
+            setTimeout(() => {
+                introTextContainer.classList.add('pulsate');
+                
+                // Add subtle rotation to letters for a dynamic effect
+                letters.forEach((letter, index) => {
+                    letter.style.transform = `rotate(${(index % 2 ? 1 : -1) * 3}deg)`;
+                    letter.style.transition = 'transform 1s ease-in-out';
+                    
+                    setInterval(() => {
+                        letter.style.transform = `rotate(${(index % 2 ? -1 : 1) * 3}deg)`;
+                    }, 2000);
+                });
+            }, totalAnimationTime * 1000);
+            
+            // Redirect to dashboard after animations complete
+            setTimeout(() => {
+                // Add fade out animation before redirect
+                document.body.style.animation = 'fadeInBackground 0.5s ease-out reverse forwards';
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('dashboard') }}";
+                }, 500);
+            }, (totalAnimationTime + 2.5) * 1000);
+        });
+        
+        // Add mouse move effect for particles
+        document.addEventListener('mousemove', function(e) {
+            const particles = document.querySelectorAll('.particle');
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            particles.forEach(particle => {
+                const particleX = parseFloat(particle.style.left) + parseFloat(particle.style.width) / 2;
+                const particleY = parseFloat(particle.style.top) + parseFloat(particle.style.height) / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(mouseX - particleX, 2) + 
+                    Math.pow(mouseY - particleY, 2)
+                );
+                
+                if (distance < 150) {
+                    const angle = Math.atan2(mouseY - particleY, mouseX - particleX);
+                    const force = (150 - distance) / 50;
+                    
+                    particle.style.transform = `translate(${Math.cos(angle + Math.PI) * force}px, ${Math.sin(angle + Math.PI) * force}px)`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
