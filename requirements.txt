@@ -5,3 +5,4 @@ python-dotenv==1.0.1
 Flask-SocketIO==5.3.0
 dnspython==2.6.0 
 dotenv
+gunicorn
