@@ -11,6 +11,8 @@
         --secondary: #3f37c9;
         --danger: #f72585;
         --info: #4895ef;
+        --success: #28a745; /* Added success color */
+        --warning: #ffc107; /* Added warning color */
         --background: #e0f2f7; /* Consistent with dashboard */
         --card-bg: #ffffff;
         --text-primary: #2d3748;
@@ -42,6 +44,7 @@
         width: 100%;
         max-width: 400px;
         animation: fadeInScale 0.7s ease-out forwards;
+        position: relative; /* Added for message positioning */
     }
 
     .auth-container h2 {
@@ -121,6 +124,44 @@
         display: none;
     }
 
+    /* Notification styles */
+    .notification {
+        position: absolute;
+        top: 20px; /* Adjust as needed */
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out;
+    }
+
+    .notification.show {
+        opacity: 1;
+        top: 40px; /* Slide down slightly */
+    }
+
+    .notification.success {
+        background-color: var(--success);
+        color: white;
+    }
+
+    .notification.error {
+        background-color: var(--danger);
+        color: white;
+    }
+
+    .notification.info {
+        background-color: var(--info);
+        color: white;
+    }
+
     /* Animations */
     @keyframes fadeInScale {
         from {
@@ -157,11 +198,13 @@
 </style>
 
 <div class="auth-container" id="auth-main-container">
+    <div id="notification-area" class="notification animate__animated"></div>
+
     <div id="login-section" class="animate__animated animate__fadeIn">
         <h2><i class="material-icons">login</i> Welcome Back!</h2>
-        <form action="/login" method="POST">
+        <form id="login-form" action="/login" method="POST">
             <div class="form-group">
-                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required>
+                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required pattern="[0-9]{10}" title="Please enter a 10-digit phone number.">
             </div>
             <button type="submit" class="auth-button">
                 <i class="material-icons">lock_open</i> Login
@@ -172,9 +215,12 @@
 
     <div id="register-section" class="hidden">
         <h2><i class="material-icons">person_add</i> Create Account</h2>
-        <form action="/register" method="POST">
+        <form id="register-form" action="/register" method="POST">
             <div class="form-group">
-                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required>
+                <input type="text" name="username" placeholder="Choose a Username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" name="phone" placeholder="Phone Number" class="form-control" required pattern="[0-9]{10}" title="Please enter a 10-digit phone number.">
             </div>
             <button type="submit" class="auth-button">
                 <i class="material-icons">how_to_reg</i> Register
@@ -185,40 +231,124 @@
 </div>
 
 <script>
-    function showRegister() {
-        const loginSection = document.getElementById('login-section');
-        const registerSection = document.getElementById('register-section');
+    const notificationArea = document.getElementById('notification-area');
+    const loginSection = document.getElementById('login-section');
+    const registerSection = document.getElementById('register-section');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
 
-        // Apply exit animation to current section
+    function showNotification(message, type = 'info') {
+        notificationArea.textContent = ''; // Clear previous message
+        notificationArea.className = 'notification animate__animated'; // Reset classes
+        notificationArea.classList.add(type, 'animate__fadeInDown'); // Add type and entrance animation
+
+        const icon = document.createElement('i');
+        icon.classList.add('material-icons');
+        
+        switch (type) {
+            case 'success':
+                icon.textContent = 'check_circle';
+                break;
+            case 'error':
+                icon.textContent = 'error';
+                break;
+            case 'info':
+                icon.textContent = 'info';
+                break;
+            case 'warning':
+                icon.textContent = 'warning';
+                break;
+            default:
+                icon.textContent = 'notifications';
+        }
+        notificationArea.appendChild(icon);
+        notificationArea.appendChild(document.createTextNode(message));
+        
+        notificationArea.classList.add('show');
+
+        setTimeout(() => {
+            notificationArea.classList.remove('show', 'animate__fadeInDown');
+            notificationArea.classList.add('animate__fadeOutUp');
+            setTimeout(() => {
+                notificationArea.classList.remove('animate__fadeOutUp');
+                notificationArea.textContent = '';
+            }, 500); // Allow fade out animation to complete
+        }, 5000); // Notification visible for 5 seconds
+    }
+
+    function showRegister() {
         loginSection.classList.remove('animate__fadeIn', 'animate__slideInLeft');
         loginSection.classList.add('animate__fadeOut');
 
         setTimeout(() => {
             loginSection.classList.add('hidden');
-            loginSection.classList.remove('animate__fadeOut'); // Clean up after animation
+            loginSection.classList.remove('animate__fadeOut');
             
-            // Show new section with entry animation
             registerSection.classList.remove('hidden', 'animate__fadeOut');
             registerSection.classList.add('animate__fadeIn', 'animate__slideInRight');
-        }, 300); // Match animation duration
+        }, 300);
+        showNotification("Time to create your account!", "info");
     }
 
     function showLogin() {
-        const loginSection = document.getElementById('login-section');
-        const registerSection = document.getElementById('register-section');
-
-        // Apply exit animation to current section
         registerSection.classList.remove('animate__fadeIn', 'animate__slideInRight');
         registerSection.classList.add('animate__fadeOut');
 
         setTimeout(() => {
             registerSection.classList.add('hidden');
-            registerSection.classList.remove('animate__fadeOut'); // Clean up after animation
+            registerSection.classList.remove('animate__fadeOut');
 
-            // Show new section with entry animation
             loginSection.classList.remove('hidden', 'animate__fadeOut');
             loginSection.classList.add('animate__fadeIn', 'animate__slideInLeft');
-        }, 300); // Match animation duration
+        }, 300);
+        showNotification("Welcome back! Please login.", "info");
     }
+
+    // Example of how to trigger notifications from the client-side
+    // In a real application, these would be triggered based on server responses.
+
+    // Simulate server response for login
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission for simulation
+        const phoneNumber = this.phone.value;
+
+        // Simulate API call and response
+        setTimeout(() => {
+            if (phoneNumber === '1234567890') {
+                showNotification('Login successful! Redirecting...', 'success');
+                // In a real app: window.location.href = '/dashboard';
+            } else if (phoneNumber === '0987654321') {
+                showNotification('This phone number is not registered. Please register.', 'error');
+            } else {
+                showNotification('Invalid phone number or credentials. Please try again.', 'error');
+            }
+        }, 1000);
+    });
+
+    // Simulate server response for registration
+    registerForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission for simulation
+        const phoneNumber = this.phone.value;
+        const username = this.username.value;
+
+        // Simulate API call and response
+        setTimeout(() => {
+            if (phoneNumber === '1234567890') {
+                showNotification('This phone number is already registered. Please login.', 'warning');
+            } else if (username === 'testuser') {
+                 showNotification('Username already taken. Please choose another.', 'warning');
+            }
+            else {
+                showNotification('Account created successfully! Please login.', 'success');
+                // In a real app: Optionally switch to login form
+                // showLogin();
+            }
+        }, 1000);
+    });
+
+    // Initial info message when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        showNotification("Please login or register to continue.", "info");
+    });
 </script>
 {% endblock %}
