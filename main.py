@@ -1,36 +1,44 @@
+# main.py
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_pymongo import PyMongo
 from datetime import datetime, timedelta
-import os
+import os # Keep this import as load_dotenv() uses os implicitly, and Config might too
 from bson.objectid import ObjectId
 from dateutil import parser
 from flask_socketio import SocketIO, emit
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+from config import Config # Import your Config class
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.config.from_object(Config) # Load configuration from Config class
 
 # MongoDB Configuration
-app.config["MONGO_URI"] = "mongodb://localhost:27017/taskmanager"
 mongo = PyMongo(app)
-db = mongo.db
+db = mongo.db # Directly assign the database object after successful initialization
 
+# Socket.IO initialization
 socketio = SocketIO(app)
 
 @app.route('/')
 def home():
     if 'phone' in session:
-        # If logged in, go to dashboard which will handle the intro logic
         return redirect(url_for('dashboard'))
     return render_template('index.html')
 
 @app.route('/login', methods=['POST'])
 def login():
+    if db is None:
+        return "Database not connected. Please check server logs.", 500
     phone = request.form.get('phone')
     user = db.users.find_one({"phone": phone})
     if user:
         session['phone'] = phone
         session['username'] = user.get('username', phone)
-        session['show_intro'] = True  # Set flag to show intro
+        session['show_intro'] = True
         session.pop('urgent_notification_sent_http', None)
         session.pop('urgent_notification_sent_socket_for_this_request', None)
         return redirect(url_for('dashboard'))
@@ -38,6 +46,8 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
+    if db is None:
+        return "Database not connected. Please check server logs.", 500
     phone = request.form.get('phone')
     username = request.form.get('username')
     if db.users.find_one({"phone": phone}):
@@ -52,7 +62,7 @@ def register():
     })
     session['phone'] = phone
     session['username'] = username
-    session['show_intro'] = True  # Set flag to show intro
+    session['show_intro'] = True
     session.pop('urgent_notification_sent_http', None)
     session.pop('urgent_notification_sent_socket_for_this_request', None)
     return redirect(url_for('dashboard'))
@@ -60,7 +70,6 @@ def register():
 # New Intro Route - always renders intro.html when accessed
 @app.route('/intro')
 def intro():
-    # intro.html itself will redirect back to dashboard after animation
     return render_template('intro.html')
 
 @app.route('/dashboard')
@@ -72,6 +81,10 @@ def dashboard():
     if session.get('show_intro'):
         session.pop('show_intro', None) # Clear the flag immediately
         return redirect(url_for('intro'))
+    
+    # --- Check for DB connection BEFORE making DB calls ---
+    if db is None:
+        return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     username = session.get('username', user_phone)
@@ -159,6 +172,10 @@ def dashboard():
 def handle_request_urgent_tasks():
     if 'phone' not in session:
         return
+    
+    if db is None: # Added DB check
+        print("WARNING: Socket.IO handler tried to access DB but connection is None.")
+        return
 
     user_phone = session['phone']
     current_time = datetime.now()
@@ -200,6 +217,9 @@ def test_disconnect():
 def add_task():
     if 'phone' not in session:
         return redirect(url_for('home'))
+    
+    if db is None: # Added DB check
+        return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task_title = request.form.get('task_title')
@@ -226,6 +246,9 @@ def add_task():
 def update_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
+    
+    if db is None: # Added DB check
+        return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task = db.todoLists.find_one({"_id": ObjectId(task_id), "phone": user_phone})
@@ -252,6 +275,9 @@ def update_task(task_id):
 def complete_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
+    
+    if db is None: # Added DB check
+        return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task = db.todoLists.find_one_and_delete({"_id": ObjectId(task_id), "phone": user_phone})
@@ -272,6 +298,9 @@ def complete_task(task_id):
 def delete_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
+    
+    if db is None: # Added DB check
+        return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task = db.todoLists.find_one_and_delete({"_id": ObjectId(task_id), "phone": user_phone})
@@ -292,6 +321,9 @@ def delete_task(task_id):
 def update_task_order():
     if 'phone' not in session:
         return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    if db is None: # Added DB check
+        return jsonify({"success": False, "message": "Database not connected"}), 500
 
     user_phone = session['phone']
     try:
@@ -313,6 +345,9 @@ def history():
     if 'phone' not in session:
         return redirect(url_for('home'))
     
+    if db is None: # Added DB check
+        return "Database not connected. Please check server logs.", 500
+    
     user_phone = session['phone']
     history_tasks = list(db.taskHistory.find({"phone": user_phone}).sort("action_at", -1))
     
@@ -322,7 +357,7 @@ def history():
 def logout():
     session.pop('phone', None)
     session.pop('username', None)
-    session.pop('show_intro', None) # Clear intro flag on logout
+    session.pop('show_intro', None)
     session.pop('urgent_notification_sent_http', None)
     session.pop('urgent_notification_sent_socket_for_this_request', None)
     return redirect(url_for('home'))

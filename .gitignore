@@ -1,0 +1,19 @@
+# .gitignore
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.env
+
+# Flask specific
+instance/
+
+# IDE specific (e.g., VS Code)
+.vscode/
+
+# MongoDB specific (if any local database files are generated)
+data/db/
