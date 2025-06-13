@@ -12,20 +12,37 @@
             --secondary: #3f37c9;
             --accent: #4cc9f0;
             --text: #ffffff;
+            --background-start: #4361ee;
+            --background-end: #3f37c9;
         }
-        
+
         body {
             margin: 0;
             overflow: hidden;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
             font-family: 'Montserrat', sans-serif;
             color: var(--text);
             animation: fadeInBackground 1s ease-out;
+            transition: background-color 0.5s ease;
         }
+
+        /* Dynamic Background Gradient Animation */
+        @keyframes animateBackground {
+            0% { background: linear-gradient(135deg, var(--background-start), var(--background-end)); }
+            25% { background: linear-gradient(145deg, #3f37c9, #4361ee); }
+            50% { background: linear-gradient(155deg, #4361ee, #4cc9f0); }
+            75% { background: linear-gradient(165deg, #4cc9f0, #3f37c9); }
+            100% { background: linear-gradient(135deg, var(--background-start), var(--background-end)); }
+        }
+        body {
+            animation: animateBackground 20s ease infinite alternate;
+        }
+
 
         /* Particle background */
         .particles {
@@ -38,36 +55,39 @@
 
         .particle {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.6);
             border-radius: 50%;
             pointer-events: none;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
         }
 
-        /* Floating shapes */
+        /* Floating shapes - Enhanced with more dynamism */
         .floating-shape {
             position: absolute;
-            opacity: 0.1;
+            opacity: 0.15;
             z-index: 0;
+            filter: blur(8px);
+            background-blend-mode: overlay;
         }
 
         .shape-1 {
-            width: 300px;
-            height: 300px;
+            width: 350px;
+            height: 350px;
             background: radial-gradient(circle, var(--accent), transparent 70%);
-            top: -150px;
-            right: -150px;
+            top: -175px;
+            right: -175px;
             border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            animation: float 25s linear infinite;
+            animation: float 25s linear infinite alternate, rotateShape 15s linear infinite;
         }
 
         .shape-2 {
-            width: 400px;
-            height: 400px;
+            width: 450px;
+            height: 450px;
             background: radial-gradient(circle, var(--primary), transparent 70%);
-            bottom: -200px;
-            left: -200px;
+            bottom: -225px;
+            left: -225px;
             border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-            animation: float 30s linear infinite reverse;
+            animation: float 30s linear infinite reverse, rotateShape 20s linear infinite reverse;
         }
 
         /* Main content container */
@@ -78,92 +98,109 @@
             flex-direction: row;
             font-size: 8em;
             font-weight: 800;
-            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
             perspective: 1000px;
+            margin-bottom: 40px;
         }
 
         .letter {
             opacity: 0;
-            transform: translateY(50px) scale(0.8);
+            transform: translateY(50px) scale(0.8) rotateX(-90deg);
             animation: revealLetter 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            margin: 0 -0.05em;
+            margin: 0 -0.07em;
             position: relative;
             display: inline-block;
+            transition: transform 0.3s ease-out, text-shadow 0.3s ease-out;
+            background: linear-gradient(45deg, var(--accent), var(--text));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-stroke: 1px rgba(255, 255, 255, 0.3);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
         }
 
-        /* Add subtle glow effect to letters */
+        .letter:hover {
+            transform: translateY(-5px) scale(1.1) rotateX(0deg);
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Subtle glow effect to letters - Adjusted */
         .letter::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at center, var(--accent), transparent 70%);
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, var(--accent), transparent 70%);
             z-index: -1;
             opacity: 0;
             animation: letterGlow 2s ease-in-out infinite;
-            animation-delay: 0.8s;
+            animation-delay: var(--glow-delay);
+            border-radius: 50%;
+            filter: blur(15px);
         }
 
         /* Delay for each letter */
-        .letter:nth-child(1) { animation-delay: 0.2s; } /* F */
-        .letter:nth-child(2) { animation-delay: 0.4s; } /* o */
-        .letter:nth-child(3) { animation-delay: 0.6s; } /* c */
-        .letter:nth-child(4) { animation-delay: 0.8s; } /* u */
-        .letter:nth-child(5) { animation-delay: 1.0s; } /* s */
-        .letter:nth-child(6) { animation-delay: 1.2s; } /* L */
-        .letter:nth-child(7) { animation-delay: 1.4s; } /* y */
+        .letter:nth-child(1) { --glow-delay: 1.0s; animation-delay: 0.2s; }
+        .letter:nth-child(2) { --glow-delay: 1.2s; animation-delay: 0.4s; }
+        .letter:nth-child(3) { --glow-delay: 1.4s; animation-delay: 0.6s; }
+        .letter:nth-child(4) { --glow-delay: 1.6s; animation-delay: 0.8s; }
+        .letter:nth-child(5) { --glow-delay: 1.8s; animation-delay: 1.0s; }
+        .letter:nth-child(6) { --glow-delay: 2.0s; animation-delay: 1.2s; }
+        .letter:nth-child(7) { --glow-delay: 2.2s; animation-delay: 1.4s; }
 
-        /* Tagline */
+        /* Tagline - More prominent */
         .tagline {
-            position: absolute;
-            bottom: 20%;
-            left: 0;
-            right: 0;
-            text-align: center;
             font-family: 'Poppins', sans-serif;
-            font-weight: 300;
-            font-size: 1.5em;
-            letter-spacing: 2px;
+            font-weight: 400;
+            font-size: 1.8em;
+            letter-spacing: 3px;
             opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.5s ease-out forwards;
-            animation-delay: 2.0s;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-delay: 2.5s;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Loading bar */
+        /* Loading bar - More visually appealing */
         .loading-bar {
-            position: absolute;
-            bottom: 15%;
-            left: 25%;
-            right: 25%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
+            position: relative; /* Changed from absolute to relative to follow flow */
+            z-index: 10;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-out forwards;
+            animation-delay: 2.5s;
+            width: 60%;
+            margin-top: 20px; /* Adjusted margin */
         }
 
         .loading-progress {
             height: 100%;
             width: 0;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            animation: loading 2.5s ease-in forwards;
-            animation-delay: 1.5s;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--primary));
+            animation: loading 3s ease-in-out forwards;
+            animation-delay: 2.8s;
+            box-shadow: 0 0 10px var(--accent);
         }
 
         /* Animations */
         @keyframes revealLetter {
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
-                text-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+                transform: translateY(0) scale(1) rotateX(0deg);
+                text-shadow: 0 0 10px rgba(76, 201, 240, 0.7), 0 0 20px rgba(76, 201, 240, 0.5);
             }
         }
 
         @keyframes letterGlow {
             0%, 100% { opacity: 0; transform: scale(0.9); }
-            50% { opacity: 0.3; transform: scale(1.1); }
+            50% { opacity: 0.4; transform: scale(1.1); }
         }
 
         @keyframes fadeInBackground {
@@ -173,7 +210,7 @@
 
         @keyframes fadeInUp {
             to {
-                opacity: 0.8;
+                opacity: 1;
                 transform: translateY(0);
             }
         }
@@ -186,8 +223,15 @@
             100% { transform: rotate(0deg) translateX(0) translateY(0); }
         }
 
+        @keyframes rotateShape {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         @keyframes loading {
-            to { width: 100%; }
+            0% { width: 0; }
+            50% { width: 100%; background-position: 100% 50%; }
+            100% { width: 100%; background-position: 0% 50%; }
         }
 
         @keyframes pulseEffect {
@@ -203,7 +247,6 @@
             }
             .tagline {
                 font-size: 1.2em;
-                bottom: 25%;
             }
             .shape-1, .shape-2 {
                 transform: scale(0.7);
@@ -216,23 +259,26 @@
                 flex-wrap: wrap;
                 justify-content: center;
             }
+            .letter {
+                margin: 0 -0.03em;
+            }
             .tagline {
                 font-size: 1em;
-                bottom: 30%;
             }
             .shape-1, .shape-2 {
                 transform: scale(0.5);
+            }
+            .loading-bar {
+                width: 80%;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Background elements -->
     <div class="particles" id="particles"></div>
     <div class="floating-shape shape-1"></div>
     <div class="floating-shape shape-2"></div>
 
-    <!-- Main content -->
     <div class="intro-container" id="introText">
         <span class="letter">F</span>
         <span class="letter">o</span>
@@ -241,41 +287,60 @@
         <span class="letter">s</span>
         <span class="letter">L</span>
         <span class="letter">y</span>
-        
-        <div class="loading-bar"><div class="loading-progress"></div></div>
+    </div>
+
+    <p class="tagline" id="tagline">Your Personal Productivity Partner</p>
+
+    <div class="loading-bar" id="loadingBar">
+        <div class="loading-progress"></div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Create particles
             const particlesContainer = document.getElementById('particles');
-            const particleCount = window.innerWidth < 768 ? 30 : 50;
+            const particleCount = window.innerWidth < 768 ? 40 : 80;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
                 
                 // Random properties
-                const size = Math.random() * 5 + 2;
+                const size = Math.random() * 8 + 3;
                 const posX = Math.random() * window.innerWidth;
                 const posY = Math.random() * window.innerHeight;
-                const delay = Math.random() * 5;
-                const duration = 10 + Math.random() * 20;
-                const opacity = 0.2 + Math.random() * 0.3;
+                const delay = Math.random() * 8;
+                const duration = 15 + Math.random() * 25;
+                const opacity = 0.3 + Math.random() * 0.4;
                 
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.left = `${posX}px`;
                 particle.style.top = `${posY}px`;
                 particle.style.opacity = opacity;
-                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite alternate`;
                 
                 particlesContainer.appendChild(particle);
             }
             
             const introTextContainer = document.getElementById('introText');
             const letters = introTextContainer.querySelectorAll('.letter');
-            const totalAnimationTime = letters.length * 0.2 + 0.8;
+            const loadingBar = document.getElementById('loadingBar');
+
+            // Calculate total animation time
+            const letterAnimationDuration = 0.8; 
+            const letterDelayIncrement = 0.2;    
+            const lastLetterDelay = (letters.length - 1) * letterDelayIncrement;
+            const taglineAnimationDelay = 2.5;
+            const taglineAnimationDuration = 0.8;
+            const loadingBarAnimationDelay = 2.8; 
+            const loadingBarAnimationDuration = 3;
+
+            const totalIntroAnimationTime = Math.max(
+                letterAnimationDuration + lastLetterDelay,
+                taglineAnimationDelay + taglineAnimationDuration,
+                loadingBarAnimationDelay + loadingBarAnimationDuration
+            );
             
             // Add pulsate effect after all letters have appeared
             setTimeout(() => {
@@ -283,23 +348,30 @@
                 
                 // Add subtle rotation to letters for a dynamic effect
                 letters.forEach((letter, index) => {
-                    letter.style.transform = `rotate(${(index % 2 ? 1 : -1) * 3}deg)`;
                     letter.style.transition = 'transform 1s ease-in-out';
                     
                     setInterval(() => {
-                        letter.style.transform = `rotate(${(index % 2 ? -1 : 1) * 3}deg)`;
-                    }, 2000);
+                        letter.style.transform = `rotate(${(index % 2 ? -1 : 1) * 2}deg)`;
+                    }, 4000 + (index * 200));
+
+                    setInterval(() => {
+                        letter.style.transform = `rotate(0deg)`;
+                    }, 2000 + (index * 200));
                 });
-            }, totalAnimationTime * 1000);
-            
+            }, (letterAnimationDuration + lastLetterDelay) * 1000);
+
             // Redirect to dashboard after animations complete
             setTimeout(() => {
                 // Add fade out animation before redirect
                 document.body.style.animation = 'fadeInBackground 0.5s ease-out reverse forwards';
+                introTextContainer.style.opacity = '0';
+                document.getElementById('tagline').style.opacity = '0';
+                loadingBar.style.opacity = '0';
+                
                 setTimeout(() => {
                     window.location.href = "{{ url_for('dashboard') }}";
                 }, 500);
-            }, (totalAnimationTime + 2.5) * 1000);
+            }, (totalIntroAnimationTime + 0.5) * 1000); // Redirect 0.5 seconds after all animations are done
         });
         
         // Add mouse move effect for particles
@@ -309,19 +381,22 @@
             const mouseY = e.clientY;
             
             particles.forEach(particle => {
-                const particleX = parseFloat(particle.style.left) + parseFloat(particle.style.width) / 2;
-                const particleY = parseFloat(particle.style.top) + parseFloat(particle.style.height) / 2;
+                const particleRect = particle.getBoundingClientRect();
+                const particleX = particleRect.left + particleRect.width / 2;
+                const particleY = particleRect.top + particleRect.height / 2;
                 
                 const distance = Math.sqrt(
                     Math.pow(mouseX - particleX, 2) + 
                     Math.pow(mouseY - particleY, 2)
                 );
                 
-                if (distance < 150) {
+                if (distance < 200) {
                     const angle = Math.atan2(mouseY - particleY, mouseX - particleX);
-                    const force = (150 - distance) / 50;
+                    const force = (200 - distance) / 30;
                     
                     particle.style.transform = `translate(${Math.cos(angle + Math.PI) * force}px, ${Math.sin(angle + Math.PI) * force}px)`;
+                } else {
+                    particle.style.transform = `translate(0, 0)`;
                 }
             });
         });

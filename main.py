@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_pymongo import PyMongo
 from datetime import datetime, timedelta
-import os # Keep this import as load_dotenv() uses os implicitly, and Config might too
+import os 
 from bson.objectid import ObjectId
 from dateutil import parser
 from flask_socketio import SocketIO, emit
@@ -11,14 +11,14 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-from config import Config # Import your Config class
+from config import Config 
 
 app = Flask(__name__)
-app.config.from_object(Config) # Load configuration from Config class
+app.config.from_object(Config) 
 
 # MongoDB Configuration
 mongo = PyMongo(app)
-db = mongo.db # Directly assign the database object after successful initialization
+db = mongo.db 
 
 # Socket.IO initialization
 socketio = SocketIO(app)
@@ -131,7 +131,24 @@ def dashboard():
             {"description": {"$regex": search_query, "$options": "i"}}
         ]
     
-    tasks = list(db.todoLists.find(query).sort([("order", 1), ("created_at", 1)]))
+    # --- Modified: Sort by deadline in ascending order (closest deadline first) ---
+    # We first fetch tasks, then sort them in Python, as MongoDB sorting on a mixed-type 'deadline' field might be complex.
+    # Alternatively, ensure 'deadline' is always stored as a datetime object in MongoDB for direct sorting.
+    tasks = list(db.todoLists.find(query))
+    
+    # Custom sort function to handle potential parsing errors and None values
+    def sort_by_deadline(task):
+        if 'deadline' in task and task['deadline']:
+            try:
+                # Ensure the deadline is treated as a datetime object for comparison
+                return parser.parse(task['deadline'])
+            except ValueError:
+                # If deadline is invalid, push it to the end (or handle as preferred)
+                return datetime.max 
+        return datetime.max # Tasks without a deadline or with an empty deadline go to the end
+
+    tasks.sort(key=sort_by_deadline)
+    # --- End Modified Sorting ---
     
     # Process tasks to calculate days left and countdown
     for task in tasks:
@@ -345,7 +362,7 @@ def history():
     if 'phone' not in session:
         return redirect(url_for('home'))
     
-    if db is None: # Added DB check
+    if db is None: 
         return "Database not connected. Please check server logs.", 500
     
     user_phone = session['phone']

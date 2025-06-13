@@ -163,7 +163,7 @@
     .app-title .material-icons {
         font-size: 1.8rem;
         color: #ffeb3b; /* A contrasting color for the icon */
-        animation: rotateIcon 4s linear infinite; /* Subtle rotation */
+        
     }
 
     @keyframes rotateIcon {
@@ -244,6 +244,17 @@
         background-color: rgba(255, 255, 255, 0.3);
     }
 
+    /* Change 1: Unified dark mode appearance for other header buttons */
+    body.dark-mode .nav-actions .btn-action:not(.dark-toggle) {
+        background-color: rgba(255, 255, 255, 0.1); /* Keep same as light mode default */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    body.dark-mode .nav-actions .btn-action:not(.dark-toggle):hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+
     /* Notification Bell Button */
     .notification-bell {
         position: relative;
@@ -259,9 +270,10 @@
         transition: all 0.3s ease;
     }
 
-    body.dark-mode .notification-bell {
-        background-color: rgba(255, 255, 255, 0.2); /* Lighter in dark mode */
-    }
+    /* The original style that changed notification-bell background in dark mode is removed */
+    /* body.dark-mode .notification-bell {
+        background-color: rgba(255, 255, 255, 0.2);
+    } */
 
     .notification-bell:hover {
         background-color: rgba(0, 0, 0, 0.5);
@@ -482,30 +494,22 @@
     .delete-btn { background-color: var(--danger); }
     .delete-btn:hover { background-color: #d62d67; transform: translateY(-1px); }
 
-    /* Responsive adjustments for action buttons */
-    @media (max-width: 400px) {
+    /* Change 2: Unified size for action buttons on smaller screens */
+    @media (max-width: 768px) { /* Adjusted breakpoint to capture tablets and phones */
         .action-btn {
-            flex: 1 1 calc(50% - 5px);
-            padding: 10px 5px;
+            flex: 1 1 calc(33.333% - 6px); /* Distribute equally for 3 buttons */
+            padding: 10px 5px; /* Adjust padding for better look on smaller buttons */
             font-size: 13px;
         }
         .action-btn i {
-            display: none;
+            display: none; /* Hide icon to save space and ensure text fits */
         }
     }
-
-    @media (min-width: 401px) and (max-width: 600px) {
-        .action-btn {
-            flex: 1 1 calc(33.333% - 6px);
-        }
-    }
-
-    @media (min-width: 601px) {
-        .action-btn {
-            flex: 0 1 auto;
-            padding: 8px 15px;
-        }
-    }
+    
+    /* Removed previous media queries that created different button sizes */
+    /* @media (max-width: 400px) { ... } */
+    /* @media (min-width: 401px) and (max-width: 600px) { ... } */
+    /* @media (min-width: 601px) { ... } */
 
     .update-form {
         margin-top: 20px;
@@ -1102,6 +1106,67 @@
         font-size: 1.2rem;
     }
 }
+/* Updated Header Button Styles */
+.nav-actions .btn-action {
+    width: 48px; /* Fixed width */
+    height: 48px; /* Fixed height */
+    padding: 0; /* Remove padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Circular buttons */
+    margin: 0 2px; /* Small gap between buttons */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Ensure icons are properly sized */
+.nav-actions .btn-action .material-icons {
+    font-size: 24px; /* Fixed icon size */
+}
+
+/* Dark mode specific adjustments */
+body.dark-mode .nav-actions .btn-action {
+    background-color: rgba(255, 255, 255, 0.1); /* Consistent dark mode background */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for visibility */
+}
+
+body.dark-mode .nav-actions .btn-action:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Hover state */
+}
+
+/* Hide text on all screen sizes */
+.nav-actions .btn-text {
+    display: none;
+}
+
+/* Notification counter positioning adjustment */
+.notification-counter {
+    top: 5px;
+    right: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav-actions .btn-action {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .nav-actions .btn-action .material-icons {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-actions .btn-action {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .nav-actions .btn-action .material-icons {
+        font-size: 20px;
+    }
+}
 </style>
 
 <div class="nav-container">
@@ -1131,7 +1196,7 @@
     </div>
 </div>
 
-    <div class="container"> {# Added container for overall content alignment #}
+    <div class="container">
     <div class="card animate__animated animate__fadeInUp">
         <h2 class="section-title">
             <i class="material-icons">add_task</i> Add New Task
@@ -1362,8 +1427,8 @@
         const notificationModalOverlay = document.getElementById('notificationModalOverlay');
         const urgentTaskList = document.getElementById('urgentTaskList');
         const closeNotificationModal = document.getElementById('closeNotificationModal');
-        const notificationBell = document.getElementById('notificationBell'); // New: Get the bell button
-        const notificationCounter = document.getElementById('notificationCounter'); // New: Get the counter span
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationCounter = document.getElementById('notificationCounter');
 
         // Request urgent tasks on connect and update UI
         socket.on('connect', () => {
@@ -1386,7 +1451,7 @@
 
                 // Update notification counter
                 notificationCounter.textContent = tasks.length;
-                notificationCounter.classList.add('visible'); // Make counter visible
+                notificationCounter.classList.add('visible');
 
                 // Show modal with animation ONLY IF it's not already open (to prevent re-showing on every update)
                 if (!notificationModalOverlay.classList.contains('active')) {
@@ -1413,8 +1478,6 @@
         if (notificationBell) {
             notificationBell.addEventListener('click', () => {
                 notificationModalOverlay.classList.add('active');
-                // You might want to "clear" the counter here, or only show it if there are unseen notifications.
-                // For now, it just re-opens the modal.
             });
         }
 
