@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_pymongo import PyMongo
 from datetime import datetime, timedelta
-import os 
+import os
 from bson.objectid import ObjectId
 from dateutil import parser
 from flask_socketio import SocketIO, emit
@@ -11,17 +11,18 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-from config import Config 
+from config import Config
 
 app = Flask(__name__)
-app.config.from_object(Config) 
+app.config.from_object(Config)
 
 # MongoDB Configuration
 mongo = PyMongo(app)
-db = mongo.db 
+db = mongo.db
 
-# Socket.IO initialization
-socketio = SocketIO(app)
+# Socket.IO initialization with CORS for deployment
+# Replace "*" with your specific Render domain (e.g., "https://your-app-name.onrender.com") for better security
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def home():
@@ -52,7 +53,7 @@ def register():
     username = request.form.get('username')
     if db.users.find_one({"phone": phone}):
         return "Phone already registered!"
-    
+
     db.users.insert_one({
         "phone": phone,
         "username": username,
@@ -81,7 +82,11 @@ def dashboard():
     if session.get('show_intro'):
         session.pop('show_intro', None) # Clear the flag immediately
         return redirect(url_for('intro'))
-    
+
+    # --- ADDED: Reset the urgent notification flag when dashboard is loaded ---
+    # This ensures notifications can be triggered again on subsequent dashboard visits.
+    session.pop('urgent_notification_sent_socket_for_this_request', None)
+
     # --- Check for DB connection BEFORE making DB calls ---
     if db is None:
         return "Database not connected. Please check server logs.", 500
@@ -121,7 +126,7 @@ def dashboard():
 
     if priority_filter and priority_filter != 'all':
         query['priority'] = priority_filter
-    
+
     if status_filter and status_filter != 'all':
         query['status'] = status_filter
 
@@ -130,12 +135,12 @@ def dashboard():
             {"title": {"$regex": search_query, "$options": "i"}},
             {"description": {"$regex": search_query, "$options": "i"}}
         ]
-    
+
     # --- Modified: Sort by deadline in ascending order (closest deadline first) ---
     # We first fetch tasks, then sort them in Python, as MongoDB sorting on a mixed-type 'deadline' field might be complex.
     # Alternatively, ensure 'deadline' is always stored as a datetime object in MongoDB for direct sorting.
     tasks = list(db.todoLists.find(query))
-    
+
     # Custom sort function to handle potential parsing errors and None values
     def sort_by_deadline(task):
         if 'deadline' in task and task['deadline']:
@@ -144,12 +149,12 @@ def dashboard():
                 return parser.parse(task['deadline'])
             except ValueError:
                 # If deadline is invalid, push it to the end (or handle as preferred)
-                return datetime.max 
+                return datetime.max
         return datetime.max # Tasks without a deadline or with an empty deadline go to the end
 
     tasks.sort(key=sort_by_deadline)
     # --- End Modified Sorting ---
-    
+
     # Process tasks to calculate days left and countdown
     for task in tasks:
         if 'deadline' in task:
@@ -157,7 +162,7 @@ def dashboard():
                 deadline = parser.parse(task['deadline'])
                 now = datetime.now()
                 delta = deadline - now
-                
+
                 if delta.total_seconds() > 0:
                     total_seconds = int(delta.total_seconds())
                     task['countdown_target'] = deadline.isoformat()
@@ -176,8 +181,8 @@ def dashboard():
                 task['days_left'] = 'Invalid date'
                 task['countdown_initial'] = None
                 task['countdown_target'] = None
-    
-    return render_template('dashboard.html', 
+
+    return render_template('dashboard.html',
                             username=username,
                             tasks=tasks,
                             priority_filter=priority_filter,
@@ -189,14 +194,16 @@ def dashboard():
 def handle_request_urgent_tasks():
     if 'phone' not in session:
         return
-    
+
     if db is None: # Added DB check
         print("WARNING: Socket.IO handler tried to access DB but connection is None.")
         return
 
     user_phone = session['phone']
     current_time = datetime.now()
-    
+
+    # This check is what prevents repeated notifications in the same session,
+    # unless the flag is popped (cleared) by login/register or the dashboard route.
     if session.get('urgent_notification_sent_socket_for_this_request'):
         return
 
@@ -213,7 +220,7 @@ def handle_request_urgent_tasks():
                 deadline = parser.parse(task['deadline'])
                 now = datetime.now()
                 delta = deadline - now
-                
+
                 if 0 < delta.total_seconds() <= 24 * 3600:
                     urgent_tasks.append({
                         'title': task['title'],
@@ -221,7 +228,7 @@ def handle_request_urgent_tasks():
                     })
             except Exception as e:
                 print(f"Error parsing deadline for task {task.get('_id')} in Socket.IO handler: {e}")
-    
+
     if urgent_tasks:
         emit('urgent_tasks_notification', urgent_tasks, room=request.sid)
         session['urgent_notification_sent_socket_for_this_request'] = True
@@ -234,7 +241,7 @@ def test_disconnect():
 def add_task():
     if 'phone' not in session:
         return redirect(url_for('home'))
-    
+
     if db is None: # Added DB check
         return "Database not connected. Please check server logs.", 500
 
@@ -246,7 +253,7 @@ def add_task():
 
     if task_title and task_description and task_priority and task_deadline:
         next_order = db.todoLists.count_documents({"phone": user_phone})
-        
+
         db.todoLists.insert_one({
             "phone": user_phone,
             "title": task_title,
@@ -263,7 +270,7 @@ def add_task():
 def update_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
-    
+
     if db is None: # Added DB check
         return "Database not connected. Please check server logs.", 500
 
@@ -292,13 +299,13 @@ def update_task(task_id):
 def complete_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
-    
+
     if db is None: # Added DB check
         return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task = db.todoLists.find_one_and_delete({"_id": ObjectId(task_id), "phone": user_phone})
-    
+
     if task:
         db.taskHistory.insert_one({
             "phone": user_phone,
@@ -315,13 +322,13 @@ def complete_task(task_id):
 def delete_task(task_id):
     if 'phone' not in session:
         return redirect(url_for('home'))
-    
+
     if db is None: # Added DB check
         return "Database not connected. Please check server logs.", 500
 
     user_phone = session['phone']
     task = db.todoLists.find_one_and_delete({"_id": ObjectId(task_id), "phone": user_phone})
-    
+
     if task:
         db.taskHistory.insert_one({
             "phone": user_phone,
@@ -338,7 +345,7 @@ def delete_task(task_id):
 def update_task_order():
     if 'phone' not in session:
         return jsonify({"success": False, "message": "Unauthorized"}), 401
-    
+
     if db is None: # Added DB check
         return jsonify({"success": False, "message": "Database not connected"}), 500
 
@@ -361,13 +368,13 @@ def update_task_order():
 def history():
     if 'phone' not in session:
         return redirect(url_for('home'))
-    
-    if db is None: 
+
+    if db is None:
         return "Database not connected. Please check server logs.", 500
-    
+
     user_phone = session['phone']
     history_tasks = list(db.taskHistory.find({"phone": user_phone}).sort("action_at", -1))
-    
+
     return render_template('history.html', history_tasks=history_tasks)
 
 @app.route('/logout')
